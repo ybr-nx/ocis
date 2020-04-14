@@ -55,22 +55,14 @@ chmod +x ocis
 
 ## Usage
 
-The program provides a few sub-commands on execution. The available configuration methods have already been mentioned above. Generally you can always see a formated help output if you execute the binary via `ocis --help`.
-
-### Server
-
-The server command is used to start the http and debug server on two addresses within a single process. The http server is serving the general webservice while the debug server is used for health check, readiness check and to server the metrics mentioned below. For further help please execute:
-
-{{< highlight txt >}}
-ocis server --help
-{{< / highlight >}}
+The program provides a few sub-commands on execution. The available configuration methods have already been mentioned above. Generally you can always see a formated help output if you execute the binary via `ocis-reva --help`.
 
 ### Health
 
 The health command is used to execute a health check, if the exit code equals zero the service should be up and running, if the exist code is greater than zero the service is not in a healthy state. Generally this command is used within our Docker containers, it could also be used within Kubernetes.
 
 {{< highlight txt >}}
-ocis health --help
+ocis-reva health --help
 {{< / highlight >}}
 
 ## Quickstart for Developers
@@ -78,54 +70,10 @@ ocis health --help
 Following https://github.com/owncloud/ocis#development
 
 ```console
-git clone https://github.com/owncloud/ocis.git
+git clone https://github.com/owncloud/ocis-reva.git
 cd ocis
 make generate build
 ```
-
-Open https://localhost:9200 and login using one of the demo accounts:
-
-```console
-einstein:relativity
-marie:radioactivty
-richard:superfluidity
-```
-
-## Runtime
-
-Included with the ocis binary is embedded a go-micro runtime that is in charge of starting services as a fork of the master process. This provides complete control over the services. Ocis extensions can be added as part of this runtime.
-
-```console
-./bin/ocis micro
-```
-
-This will currently boot:
-
-```console
-com.owncloud.api
-com.owncloud.http.broker
-com.owncloud.proxy
-com.owncloud.registry
-com.owncloud.router
-com.owncloud.runtime
-com.owncloud.web
-go.micro.http.broker
-```
-
-Further ocis extensions can be added to the runtime via the ocis command like:
-
-```console
-./bin/ocis hello
-```
-
-Which will register:
-
-```console
-com.owncloud.web.hello
-com.owncloud.api.hello
-```
-
-To the list of available services.
 
 ## Metrics
 
