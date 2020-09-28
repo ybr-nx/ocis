@@ -19,6 +19,7 @@ require (
 	github.com/mennanov/fieldmask-utils v0.3.2
 	github.com/micro/cli/v2 v2.1.2
 	github.com/micro/go-micro/v2 v2.9.1
+	github.com/micro/go-plugins/wrapper/breaker/gobreaker/v2 v2.9.1
 	github.com/oklog/run v1.1.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/owncloud/ocis/ocis-pkg v0.0.0-20200918114005-1a0ddd2190ee
@@ -26,6 +27,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/restic/calens v0.2.0
 	github.com/rs/zerolog v1.19.0
+	github.com/sony/gobreaker v0.4.1
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.6.1
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect

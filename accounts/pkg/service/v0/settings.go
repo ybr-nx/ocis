@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
-
+	"fmt"
 	mclient "github.com/micro/go-micro/v2/client"
+	"github.com/micro/go-plugins/wrapper/breaker/gobreaker/v2"
 	olog "github.com/owncloud/ocis/ocis-pkg/log"
 	settings "github.com/owncloud/ocis/settings/pkg/proto/v0"
 	ssvc "github.com/owncloud/ocis/settings/pkg/service/v0"
+	b "github.com/sony/gobreaker"
 )
 
 const (
@@ -17,7 +19,21 @@ const (
 func RegisterSettingsBundles(l *olog.Logger) {
 	// TODO this won't work with a registry other than mdns. Look into Micro's client initialization.
 	// https://github.com/owncloud/ocis-proxy/issues/38
-	service := settings.NewBundleService("com.owncloud.api.settings", mclient.DefaultClient)
+	c := gobreaker.NewCustomClientWrapper(
+		b.Settings{
+			OnStateChange: func(name string, from b.State, to b.State){
+				fmt.Printf("\n%v circuit breaker state changed from %v to %v\n\n", name, from, to)
+			},
+			ReadyToTrip: func(counts b.Counts) bool {
+				if counts.ConsecutiveFailures == 2 {
+					return true
+				}
+				return false
+			},
+			Name: "accounts-default-settings-breaker",
+		}, 0,
+	)
+	service := settings.NewBundleService("com.owncloud.api.settings", c(mclient.DefaultClient))
 
 	bundleRequests := []settings.SaveBundleRequest{
 		generateBundleProfileRequest(),
@@ -37,7 +53,7 @@ func RegisterSettingsBundles(l *olog.Logger) {
 		res, err := service.AddSettingToBundle(context.Background(), &permissionRequests[i])
 		bundleID := permissionRequests[i].BundleId
 		if err != nil {
-			l.Err(err).Str("bundle", bundleID).Str("setting", permissionRequests[i].Setting.Id).Msg("Error adding setting to bundle")
+			l.Err(err).Str("bundle", bundleID).Str("setting", permissionRequests[i].Setting.Id).Msg("error adding setting to bundle")
 		} else {
 			l.Info().Str("bundle", bundleID).Str("setting", res.Setting.Id).Msg("Successfully added setting to bundle")
 		}

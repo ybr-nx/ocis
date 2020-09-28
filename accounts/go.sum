@@ -756,6 +756,8 @@ github.com/micro/cli/v2 v2.1.2 h1:43J1lChg/rZCC1rvdqZNFSQDrGT7qfMrtp6/ztpIkEM=
 github.com/micro/cli/v2 v2.1.2/go.mod h1:EguNh6DAoWKm9nmk+k/Rg0H3lQnDxqzu5x5srOtGtYg=
 github.com/micro/go-micro/v2 v2.9.1 h1:+S9koIrNWARjpP6k2TZ7kt0uC9zUJtNXzIdZTZRms7Q=
 github.com/micro/go-micro/v2 v2.9.1/go.mod h1:x55ZM3Puy0FyvvkR3e0ha0xsE9DFwfPSUMWAIbFY0SY=
+github.com/micro/go-plugins/wrapper/breaker/gobreaker/v2 v2.9.1 h1:9T5HaOZ4NWG77Is3pZ50kIYf5as8VQNC8qBQwwC1sBc=
+github.com/micro/go-plugins/wrapper/breaker/gobreaker/v2 v2.9.1/go.mod h1:Hf3J2oJVLZJ2U3dnYNQQSlOnRXcLcxecvRPqiPRTScs=
 github.com/micro/go-plugins/wrapper/trace/opencensus/v2 v2.9.1 h1:IaZUsLp0Omb/ozDnRKEvVY56C0UocBdPxxg2S2Pk2j0=
 github.com/micro/go-plugins/wrapper/trace/opencensus/v2 v2.9.1/go.mod h1:26UmOLM/I487NqTg3n6zJiBrYmIb684M2Zp4WH98XzU=
 github.com/microcosm-cc/bluemonday v1.0.1/go.mod h1:hsXNsILzKxV+sX77C5b8FSuKF00vh2OMYv+xgHpAMF4=
@@ -998,6 +1000,8 @@ github.com/smartystreets/goconvey v1.6.4 h1:fv0U8FUIMPNf1L9lnHLvLhgicrIVChEkdzIK
 github.com/smartystreets/goconvey v1.6.4/go.mod h1:syvi0/a8iFYH4r/RixwvyeAJjdLS9QV7WQ/tjFTllLA=
 github.com/soheilhy/cmux v0.1.4 h1:0HKaf1o97UwFjHH9o5XsHUOF+tqmdA7KEzXLpiyaw0E=
 github.com/soheilhy/cmux v0.1.4/go.mod h1:IM3LyeVVIOuxMH7sFAkER9+bJ4dT7Ms6E4xg4kGIyLM=
+github.com/sony/gobreaker v0.4.1 h1:oMnRNZXX5j85zso6xCPRNPtmAycat+WcoKbklScLDgQ=
+github.com/sony/gobreaker v0.4.1/go.mod h1:ZKptC7FHNvhBz7dN2LGjPVBz2sZJmc0/PkyDJOjmxWY=
 github.com/sourcegraph/annotate v0.0.0-20160123013949-f4cad6c6324d/go.mod h1:UdhH50NIW0fCiwBSr0co2m7BnFLdv4fQTgdqdJTHFeE=
 github.com/sourcegraph/syntaxhighlight v0.0.0-20170531221838-bd320f5d308e/go.mod h1:HuIsMU8RRBOtsCgI77wP899iHVBQpCmg4ErYMZB+2IA=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
