@@ -1,0 +1,7 @@
+#!/bin/sh
+
+: "${OCIS_DOMAIN:='localhost:9200'}"
+
+mkdir -p /etc/ocis
+sed -e "s|ocis.example.org|${OCIS_DOMAIN}|g" /config/identifier-registration.yml.tmpl > /etc/ocis/identifier-registration.yml
+exec /usr/bin/ocis server
