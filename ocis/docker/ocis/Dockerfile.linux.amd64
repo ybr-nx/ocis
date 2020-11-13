@@ -1,5 +1,20 @@
-FROM amd64/alpine:latest
+# syntax = docker/dockerfile:1-experimental
 
+#Needs  DOCKER_BUILDKIT=1 to run, run it from the ocis root
+FROM golang:1.15.4-alpine AS build
+RUN apk update && \
+	apk upgrade && \
+	apk add make
+
+WORKDIR /ocis
+ADD . ./
+WORKDIR ocis
+RUN --mount=type=cache,target=/root/.cache/go-build go mod download
+ENV CGO_ENABLED=0
+RUN make build
+
+
+FROM golang:1.15.4-alpine
 RUN apk update && \
 	apk upgrade && \
 	apk add ca-certificates mailcap && \
@@ -11,9 +26,13 @@ LABEL maintainer="ownCloud GmbH <devops@owncloud.com>" \
   org.label-schema.vendor="ownCloud GmbH" \
   org.label-schema.schema-version="1.0"
 
-CMD ["entrypoint"]
 
-RUN mkdir -p /config
-COPY entrypoint /entrypoint
-COPY identifier-registration.yaml.tmpl /config/identifier-registration.yaml.tmpl
-COPY bin/ocis /usr/bin/ocis
+RUN mkdir -p /config && mkdir -p /usr/bin
+RUN echo $PATH
+COPY ocis/docker/ocis/entrypoint /entrypoint
+COPY ocis/docker/ocis/identifier-registration.yaml.tmpl /config/identifier-registration.yaml.tmpl
+COPY --from=build /ocis/ocis/bin/ocis /usr/bin
+
+
+CMD ["/entrypoint"]
+

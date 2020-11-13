@@ -2,6 +2,7 @@
 
 : "${OCIS_DOMAIN:='localhost:9200'}"
 
-mkdir -p /etc/ocis
-sed -e "s|ocis.example.org|${OCIS_DOMAIN}|g" /config/identifier-registration.yml.tmpl > /etc/ocis/identifier-registration.yml
-exec /usr/bin/ocis server
+sed -e "s|ocis.example.org|${OCIS_DOMAIN}|g" /config/identifier-registration.yaml.tmpl > /config/identifier-registration.yaml
+ls /usr/bin
+sleep 999999999
+#exec /usr/bin/ocis server
