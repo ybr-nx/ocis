@@ -33,3 +33,16 @@ func IsNotFoundErr(e error) bool {
 	_, ok := e.(*NotFoundErr)
 	return ok
 }
+
+// NotSupportedErr implements the Error interface.
+type NotSupportedErr struct{}
+
+func (e *NotSupportedErr) Error() string {
+	return "not supported"
+}
+
+// IsNotSupprtedErr checks whether an error is of type IsNotSupprtedErr.
+func IsNotSupprtedErr(e error) bool {
+	_, ok := e.(*NotSupportedErr)
+	return ok
+}

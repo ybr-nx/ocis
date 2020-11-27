@@ -128,6 +128,13 @@ func ServerWithConfig(cfg *config.Config) []cli.Flag {
 			Destination: &cfg.Repo.CS3.ProviderAddr,
 		},
 		&cli.StringFlag{
+			Name:        "storage-cs3-users-provider-addr",
+			Value:       "",
+			Usage:       "bind address for the cs3 users provider",
+			EnvVars:     []string{"ACCOUNTS_STORAGE_CS3_USERS_PROVIDER_ADDR"},
+			Destination: &cfg.Repo.CS3.UserProviderAddr,
+		},
+		&cli.StringFlag{
 			Name:        "storage-cs3-data-url",
 			Value:       "http://localhost:9216",
 			Usage:       "http endpoint of the metadata storage",

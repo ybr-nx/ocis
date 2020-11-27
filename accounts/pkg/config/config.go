@@ -76,10 +76,11 @@ type Disk struct {
 
 // CS3 is the cs3 implementation of the storage.
 type CS3 struct {
-	ProviderAddr string
-	DataURL      string
-	DataPrefix   string
-	JWTSecret    string
+	ProviderAddr     string
+	UserProviderAddr string
+	DataURL          string
+	DataPrefix       string
+	JWTSecret        string
 }
 
 // ServiceUser defines the user required for EOS.

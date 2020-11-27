@@ -2,9 +2,11 @@ package command
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/signal"
 	"path"
+	"runtime/pprof"
 	"time"
 
 	"github.com/cs3org/reva/cmd/revad/runtime"
@@ -123,6 +125,11 @@ func StorageHome(cfg *config.Config) *cli.Command {
 				}
 
 				gr.Add(func() error {
+					f, err := os.Create("pprof.prof")
+					if err != nil {
+						log.Fatal(err)
+					}
+					pprof.StartCPUProfile(f)
 					runtime.RunWithOptions(
 						rcfg,
 						pidFile,
@@ -134,6 +141,7 @@ func StorageHome(cfg *config.Config) *cli.Command {
 						Str("server", c.Command.Name).
 						Msg("Shutting down server")
 
+					pprof.StopCPUProfile()
 					cancel()
 				})
 			}

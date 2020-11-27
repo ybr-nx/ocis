@@ -11,8 +11,9 @@ import (
 	"github.com/owncloud/ocis/ocis-pkg/indexer/config"
 	"github.com/owncloud/ocis/ocis-pkg/indexer/errors"
 	"github.com/owncloud/ocis/ocis-pkg/indexer/index"
-	_ "github.com/owncloud/ocis/ocis-pkg/indexer/index/cs3"  // to populate index
-	_ "github.com/owncloud/ocis/ocis-pkg/indexer/index/disk" // to populate index
+	_ "github.com/owncloud/ocis/ocis-pkg/indexer/index/cs3"      // to populate index
+	_ "github.com/owncloud/ocis/ocis-pkg/indexer/index/cs3users" // to populate index
+	_ "github.com/owncloud/ocis/ocis-pkg/indexer/index/disk"     // to populate index
 	"github.com/owncloud/ocis/ocis-pkg/indexer/option"
 	"github.com/owncloud/ocis/ocis-pkg/indexer/registry"
 )
@@ -40,6 +41,9 @@ func getRegistryStrategy(cfg *config.Config) string {
 	if cfg.Repo.Disk.Path != "" {
 		return "disk"
 	}
+	if cfg.Repo.CS3.ProviderAddr != "" {
+		return "cs3users"
+	}
 
 	return "cs3"
 }
@@ -62,12 +66,20 @@ func (i Indexer) Reset() error {
 }
 
 // AddIndex adds a new index to the indexer receiver.
+// t is used by the autoincrement to do what?
+// indexBy is the property of t that should be indexed
+// pkName is the primary key that is returned
+// entityDirName
+// indexType can be "unique", "non_unique" or "autoincrement"// TODO use constants
+// bound is used to determine the boundaries of ?
+// caseInsensitive can be set to true to make lookup case insensitive
 func (i Indexer) AddIndex(t interface{}, indexBy, pkName, entityDirName, indexType string, bound *option.Bound, caseInsensitive bool) error {
 	strategy := getRegistryStrategy(i.config)
 	f := registry.IndexConstructorRegistry[strategy][indexType]
 	var idx index.Index
 
-	if strategy == "disk" {
+	switch strategy {
+	case "disk":
 		idx = f(
 			option.CaseInsensitive(caseInsensitive),
 			option.WithEntity(t),
@@ -77,7 +89,7 @@ func (i Indexer) AddIndex(t interface{}, indexBy, pkName, entityDirName, indexTy
 			option.WithFilesDir(path.Join(i.config.Repo.Disk.Path, entityDirName)),
 			option.WithDataDir(i.config.Repo.Disk.Path),
 		)
-	} else if strategy == "cs3" {
+	case "cs3":
 		idx = f(
 			option.CaseInsensitive(caseInsensitive),
 			option.WithEntity(t),
@@ -90,6 +102,17 @@ func (i Indexer) AddIndex(t interface{}, indexBy, pkName, entityDirName, indexTy
 			option.WithProviderAddr(i.config.Repo.CS3.ProviderAddr),
 			option.WithServiceUser(i.config.ServiceUser),
 		)
+	case "cs3users":
+		idx = f(
+			option.CaseInsensitive(caseInsensitive),
+			option.WithEntity(t),
+			option.WithTypeName(getTypeFQN(t)),
+			option.WithIndexBy(indexBy),
+			option.WithProviderAddr(i.config.Repo.CS3.UserProviderAddr),
+			option.WithJWTSecret(i.config.Repo.CS3.JWTSecret),
+		)
+	default:
+		return fmt.Errorf("unknown index strategy: %s", strategy)
 	}
 
 	i.indices.addIndex(getTypeFQN(t), pkName, idx)

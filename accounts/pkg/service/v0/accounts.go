@@ -3,12 +3,13 @@ package service
 import (
 	"context"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
 	"path"
 	"regexp"
 	"strconv"
 	"sync"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/owncloud/ocis/ocis-pkg/log"
 
@@ -598,6 +599,17 @@ func (s Service) DeleteAccount(ctx context.Context, in *proto.DeleteAccountReque
 		return merrors.InternalServerError(s.id, "could not load account: %v", err.Error())
 	}
 
+	// first try to delete the account
+	// this gives a readonly repo the chance to fail early
+	if err = s.repo.DeleteAccount(ctx, id); err != nil {
+		if storage.IsNotFoundErr(err) {
+			return merrors.NotFound(s.id, "account not found: %v", err.Error())
+		}
+
+		s.log.Error().Err(err).Str("id", id).Str("accountId", id).Msg("could not remove account")
+		return merrors.InternalServerError(s.id, "could not remove account: %v", err.Error())
+	}
+
 	// delete member relationship in groups
 	for i := range a.MemberOf {
 		err = s.RemoveMember(ctx, &proto.RemoveMemberRequest{
@@ -607,15 +619,6 @@ func (s Service) DeleteAccount(ctx context.Context, in *proto.DeleteAccountReque
 		if err != nil {
 			s.log.Error().Err(err).Str("accountid", id).Str("groupid", a.MemberOf[i].Id).Msg("could not remove group member, skipping")
 		}
-	}
-
-	if err = s.repo.DeleteAccount(ctx, id); err != nil {
-		if storage.IsNotFoundErr(err) {
-			return merrors.NotFound(s.id, "account not found: %v", err.Error())
-		}
-
-		s.log.Error().Err(err).Str("id", id).Str("accountId", id).Msg("could not remove account")
-		return merrors.InternalServerError(s.id, "could not remove account: %v", err.Error())
 	}
 
 	if err = s.index.Delete(a); err != nil {

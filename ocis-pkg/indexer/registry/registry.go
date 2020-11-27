@@ -12,4 +12,5 @@ type IndexConstructor func(o ...option.Option) index.Index
 var IndexConstructorRegistry = map[string]map[string]IndexConstructor{
 	"disk": {},
 	"cs3":  {},
+	"cs3users":  {},
 }

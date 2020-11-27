@@ -57,6 +57,7 @@ func New(opts ...Option) (s *Service, err error) {
 		repo:        createMetadataStorage(cfg, logger),
 	}
 
+	// TODO add skip creation flag. only do this when it is false
 	if s.index, err = s.buildIndex(); err != nil {
 		return nil, err
 	}
@@ -114,10 +115,11 @@ func configFromSvc(cfg *config.Config) (*idxcfg.Config, error) {
 		if (config.CS3{}) != cfg.Repo.CS3 {
 			c.Repo = idxcfg.Repo{
 				CS3: idxcfg.CS3{
-					ProviderAddr: cfg.Repo.CS3.ProviderAddr,
-					DataURL:      cfg.Repo.CS3.DataURL,
-					DataPrefix:   cfg.Repo.CS3.DataPrefix,
-					JWTSecret:    cfg.Repo.CS3.JWTSecret,
+					ProviderAddr:     cfg.Repo.CS3.ProviderAddr,
+					UserProviderAddr: cfg.Repo.CS3.UserProviderAddr,
+					DataURL:          cfg.Repo.CS3.DataURL,
+					DataPrefix:       cfg.Repo.CS3.DataPrefix,
+					JWTSecret:        cfg.Repo.CS3.JWTSecret,
 				},
 			}
 		}
@@ -408,6 +410,13 @@ func createMetadataStorage(cfg *config.Config, logger log.Logger) storage.Repo {
 	// the config with defaults needs to be checked last
 	if cfg.Repo.Disk.Path != "" {
 		return storage.NewDiskRepo(cfg, logger)
+	}
+	if cfg.Repo.CS3.UserProviderAddr != "" {
+		repo, err := storage.NewCS3UsersRepo(cfg)
+		if err != nil {
+			logger.Fatal().Err(err).Msg("cs3 users storage was configured but failed to start")
+		}
+		return repo
 	}
 	repo, err := storage.NewCS3Repo(cfg)
 	if err != nil {

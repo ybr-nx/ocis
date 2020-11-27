@@ -17,3 +17,15 @@ func IsNotFoundErr(e error) bool {
 	_, ok := e.(*notFoundErr)
 	return ok
 }
+
+type unsupportedErr struct{}
+
+func (e *unsupportedErr) Error() string {
+	return "unsupported"
+}
+
+// IsUnsupportedErr can be returned by repo Write operations
+func IsUnsupportedErr(e error) bool {
+	_, ok := e.(*unsupportedErr)
+	return ok
+}
