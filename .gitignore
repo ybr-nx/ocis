@@ -21,3 +21,7 @@ composer.lock
 vendor
 vendor-bin/**/vendor
 vendor-bin/**/composer.lock
+
+# oCIS data
+data/
+ocis/data/
