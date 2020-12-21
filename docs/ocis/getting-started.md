@@ -17,7 +17,9 @@ You can find more deployments examples in the [deployment section](https://owncl
 
 ### Binaries
 
-The binaries for different platforms are downloadable at [our download mirror](https://download.owncloud.com/ocis/ocis/) or on [GitHub](https://github.com/owncloud/ocis/releases). Latest binaries from the master branch can be found at [our download mirrors testing section](https://download.owncloud.com/ocis/ocis/testing/).
+The easiest way is to set up from the go binary on a local machine. The oCIS binary defaults to [https://localhost:9200](https://localhost:9200) which is only accessible from a web browser that runs on the same machine.
+
+The binaries for different platforms can be downloaded from [our download mirror](https://download.owncloud.com/ocis/ocis/) or on [GitHub](https://github.com/owncloud/ocis/releases). Latest binaries from the master branch can be found at [our download mirrors testing section](https://download.owncloud.com/ocis/ocis/testing/).
 
 ```console
 # for mac
@@ -30,6 +32,30 @@ chmod +x ocis
 ```
 
 The default primary storage location is `/var/tmp/ocis`. You can change that value by configuration.
+
+### Remote Deployment
+
+For simple remote deployment, we recommend docker-compose.
+
+Let us assume the URL of your test server is `server.home.local`.
+
+Get oCIS started with the following command sequence:
+
+```bash
+
+wget https://raw.githubusercontent.com/owncloud/ocis/master/deployments/examples/ocis_traefik/docker-compose.yml
+mkdir config
+wget https://raw.githubusercontent.com/owncloud/ocis/master/deployments/examples/ocis_traefik/config/identifier-registration.dist.yaml -O config/identifier-registration.yaml
+
+cat << EOF > .env
+OCIS_BASE_URL=server.home.local
+OCIS_HTTP_PORT=9200
+OCIS_DOCKER_TAG=latest
+EOF
+
+curl -k https://server.home.local:9200/status.php
+```
+
 
 
 ### Docker

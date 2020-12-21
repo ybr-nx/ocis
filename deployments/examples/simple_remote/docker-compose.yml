@@ -1,0 +1,45 @@
+---
+version: "3.7"
+
+services:
+  ocis:
+    image: owncloud/ocis:${OCIS_DOCKER_TAG:-latest}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - | # as long as https://github.com/owncloud/product/issues/15 is open we need this step to template konnectd config
+        cp /config/identifier-registration.dist.yaml /config/identifier-registration.yaml
+        sed -i 's/ocis.owncloud.test/${OCIS_DOMAIN:-ocis.owncloud.test}/g' /config/identifier-registration.yaml
+        ocis server
+    networks:
+      default:
+    environment:
+      # general config
+      OCIS_DOMAIN: ${OCIS_DOMAIN:-ocis.owncloud.test}
+      OCIS_LOG_LEVEL: ${OCIS_LOG_LEVEL:-error}
+      # proxy config
+      PROXY_OIDC_ISSUER: https://${OCIS_DOMAIN:-ocis.owncloud.test}
+      PROXY_TLS: "false"
+      # web config
+      WEB_OIDC_AUTHORITY: https://${OCIS_DOMAIN:-ocis.owncloud.test}
+      WEB_OIDC_METADATA_URL: https://${OCIS_DOMAIN:-ocis.owncloud.test}/.well-known/openid-configuration
+      WEB_UI_CONFIG_APPS: files,draw-io,markdown-editor,media-viewer
+      WEB_UI_CONFIG_SERVER: https://${OCIS_DOMAIN:-ocis.owncloud.test}
+      # storage config
+      STORAGE_DATAGATEWAY_PUBLIC_URL: https://${OCIS_DOMAIN:-ocis.owncloud.test}/data
+      STORAGE_FRONTEND_PUBLIC_URL: https://${OCIS_DOMAIN:-ocis.owncloud.test}/
+      STORAGE_OIDC_ISSUER: https://${OCIS_DOMAIN:-ocis.owncloud.test}
+      STORAGE_OIDC_INSECURE: "${INSECURE:-false}"
+      STORAGE_LDAP_IDP: https://${OCIS_DOMAIN:-ocis.owncloud.test}
+      # idp config
+      KONNECTD_ISS: https://${OCIS_DOMAIN:-ocis.owncloud.test}
+      KONNECTD_TLS: 'false'
+      # thumbnail config
+      THUMBNAILS_WEBDAVSOURCE_BASEURL: https://localhost:9200/remote.php/webdav/
+    volumes:
+      - ./config:/config
+      - ocis-data:/var/tmp/ocis
+    restart: always
+
+volumes:
+  ocis-data:
