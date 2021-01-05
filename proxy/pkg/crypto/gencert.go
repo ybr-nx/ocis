@@ -42,7 +42,7 @@ func pemBlockForKey(priv interface{}, l log.Logger) *pem.Block {
 }
 
 // GenCert generates TLS-Certificates
-func GenCert(l log.Logger) error {
+func GenCert(hosts []string, l log.Logger) error {
 	var priv interface{}
 	var err error
 
@@ -64,8 +64,8 @@ func GenCert(l log.Logger) error {
 	template := x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			Organization: []string{"Acme Corp"},
-			CommonName:   "OCIS",
+			Organization: []string{"ownCloud Infinite Scale"},
+			CommonName:   "oCIS",
 		},
 		NotBefore: notBefore,
 		NotAfter:  notAfter,
@@ -75,7 +75,6 @@ func GenCert(l log.Logger) error {
 		BasicConstraintsValid: true,
 	}
 
-	hosts := []string{"127.0.0.1", "localhost"}
 	for _, h := range hosts {
 		if ip := net.ParseIP(h); ip != nil {
 			template.IPAddresses = append(template.IPAddresses, ip)

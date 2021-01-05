@@ -26,7 +26,7 @@ func Server(opts ...Option) (svc.Service, error) {
 
 			if os.IsNotExist(certErr) || os.IsNotExist(keyErr) {
 				// GenCert has side effects as it writes 2 files to the binary running location
-				if err := crypto.GenCert(l); err != nil {
+				if err := crypto.GenCert([]string{options.Config.HTTP.Addr}, l); err != nil {
 					l.Fatal().Err(err).Msgf("Could not generate test-certificate")
 					os.Exit(1)
 				}
