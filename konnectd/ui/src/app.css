@@ -99,6 +99,23 @@ strong {
   }
 }
 
+.oc-info-box {
+  background-color: white;
+  border-radius: 3px;
+  margin-bottom: 20px;
+  padding: 10px;
+}
+
+.oc-info-box p {
+  color: #1f2939;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.oc-info-box p + p {
+  margin-top: 5px;
+}
+
 /* Helpers */
 .oc-mt-l {
   margin-top: 30px !important;

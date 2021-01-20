@@ -64,38 +64,51 @@ class Login extends React.PureComponent {
         : <ErrorMessage error={errors.password}></ErrorMessage>);
 
     return (
-      <form action="" onSubmit={(event) => this.logon(event)}>
-        <TextInput
-          autoFocus
-          autoCapitalize="off"
-          spellCheck="false"
-          value={username}
-          onChange={this.handleChange('username')}
-          autoComplete="kopano-account username"
-          placeholder={({ id: "konnect.login.usernameField.label", defaultMessage: "Username" })}
-        />
-        <TextInput
-          type="password"
-          margin="normal"
-          onChange={this.handleChange('password')}
-          autoComplete="kopano-account current-password"
-          placeholder={({ id: "konnect.login.usernameField.label", defaultMessage: "Password" })}
-        />
-        {hasError && <Typography variant="subtitle2" color="error" className={classes.message}>{errorMessage}</Typography>}
-        <div className={classes.wrapper}>
-          <Button
-            type="submit"
-            color="primary"
-            variant="contained"
-            className="oc-button-primary oc-mt-l"
-            disabled={!!loading}
-            onClick={(event) => this.logon(event)}
-          >
-            <FormattedMessage id="konnect.login.nextButton.label" defaultMessage="Log in"></FormattedMessage>
-          </Button>
-          {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+      <React.Fragment>
+        <div className="oc-info-box">
+          <p>
+            <FormattedMessage id="konnect.login.info.username" defaultMessage="Username: einstein"></FormattedMessage>
+          </p>
+          <p>
+            <FormattedMessage id="konnect.login.info.password" defaultMessage="Password: relativity"></FormattedMessage>
+          </p>
+          <p>
+            <FormattedMessage id="konnect.login.info.dataHint" defaultMessage="Do not upload sensitive or personal data, other users can see your uploads."></FormattedMessage>
+          </p>
         </div>
-      </form>
+        <form action="" onSubmit={(event) => this.logon(event)}>
+          <TextInput
+            autoFocus
+            autoCapitalize="off"
+            spellCheck="false"
+            value={username}
+            onChange={this.handleChange('username')}
+            autoComplete="kopano-account username"
+            placeholder={({ id: "konnect.login.usernameField.label", defaultMessage: "Username" })}
+          />
+          <TextInput
+            type="password"
+            margin="normal"
+            onChange={this.handleChange('password')}
+            autoComplete="kopano-account current-password"
+            placeholder={({ id: "konnect.login.usernameField.label", defaultMessage: "Password" })}
+          />
+          {hasError && <Typography variant="subtitle2" color="error" className={classes.message}>{errorMessage}</Typography>}
+          <div className={classes.wrapper}>
+            <Button
+              type="submit"
+              color="primary"
+              variant="contained"
+              className="oc-button-primary oc-mt-l"
+              disabled={!!loading}
+              onClick={(event) => this.logon(event)}
+            >
+              <FormattedMessage id="konnect.login.nextButton.label" defaultMessage="Log in"></FormattedMessage>
+            </Button>
+            {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+          </div>
+        </form>
+      </React.Fragment>
     );
   }
 
