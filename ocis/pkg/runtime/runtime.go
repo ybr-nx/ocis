@@ -33,7 +33,7 @@ var (
 	// Extensions are ocis extension services
 	Extensions = []string{
 		"glauth",
-		"konnectd",
+		"idp",
 		"ocs",
 		"onlyoffice",
 		"proxy",
