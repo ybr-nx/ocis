@@ -191,10 +191,9 @@ def main(ctx):
 
   if ctx.build.event == "cron":
     pipelines = test_pipelines + [
-      benchmark(ctx),
       pipelineDependsOn(
         purgeBuildArtifactCache(ctx, 'ocis-binary-amd64'),
-        testPipelines(ctx) + [benchmark(ctx)]
+        testPipelines(ctx)
       )
     ]
 
@@ -206,21 +205,12 @@ def main(ctx):
     pipelines = [docs(ctx)]
 
   else:
-    if '[with-benchmarks]' in (ctx.build.title + ctx.build.message):
-      test_pipelines += [
-      benchmark(ctx),
+    test_pipelines.append(
       pipelineDependsOn(
         purgeBuildArtifactCache(ctx, 'ocis-binary-amd64'),
-        testPipelines(ctx) + [benchmark(ctx)]
+        testPipelines(ctx)
       )
-    ]
-    else:
-      test_pipelines.append(
-        pipelineDependsOn(
-          purgeBuildArtifactCache(ctx, 'ocis-binary-amd64'),
-          testPipelines(ctx)
-        )
-      )
+    )
 
     pipelines = test_pipelines + build_release_pipelines + build_release_helpers
 
@@ -265,7 +255,7 @@ def testOcisModule(ctx, module):
   steps = makeGenerate(module) + [
     {
       'name': 'vet',
-      'image': 'webhippie/golang:1.14',
+      'image': 'webhippie/golang:1.15',
       'pull': 'always',
       'commands': [
         'make -C %s vet' % (module),
@@ -274,7 +264,7 @@ def testOcisModule(ctx, module):
     },
     {
       'name': 'staticcheck',
-      'image': 'webhippie/golang:1.14',
+      'image': 'webhippie/golang:1.15',
       'pull': 'always',
       'commands': [
         'make -C %s staticcheck' % (module),
@@ -283,7 +273,7 @@ def testOcisModule(ctx, module):
     },
     {
       'name': 'lint',
-      'image': 'webhippie/golang:1.14',
+      'image': 'webhippie/golang:1.15',
       'pull': 'always',
       'commands': [
         'make -C %s lint' % (module),
@@ -292,7 +282,7 @@ def testOcisModule(ctx, module):
     },
     {
         'name': 'test',
-        'image': 'webhippie/golang:1.14',
+        'image': 'webhippie/golang:1.15',
         'pull': 'always',
         'commands': [
           'make -C %s test' % (module),
@@ -514,7 +504,7 @@ def coreApiTests(ctx, part_number = 1, number_of_parts = 1, storage = 'owncloud'
           'BEHAT_FILTER_TAGS': '~@notToImplementOnOCIS&&~@toImplementOnOCIS&&~comments-app-required&&~@federation-app-required&&~@notifications-app-required&&~systemtags-app-required&&~@local_storage&&~@skipOnOcis-%s-Storage' % ('OC' if storage == 'owncloud' else 'OCIS'),
           'DIVIDE_INTO_NUM_PARTS': number_of_parts,
           'RUN_PART': part_number,
-          'EXPECTED_FAILURES_FILE': '/drone/src/tests/acceptance/expected-failures-API-on-%s-storage.txt' % (storage.upper()),
+          'EXPECTED_FAILURES_FILE': '/drone/src/tests/acceptance/expected-failures-API-on-%s-storage.md' % (storage.upper()),
         },
         'commands': [
           'make -C /srv/app/testrunner test-acceptance-api',
@@ -533,52 +523,6 @@ def coreApiTests(ctx, part_number = 1, number_of_parts = 1, storage = 'owncloud'
       ],
     },
     'volumes': [pipelineVolumeOC10Tests],
-  }
-
-def benchmark(ctx):
-  return {
-    'kind': 'pipeline',
-    'type': 'docker',
-    'name': 'benchmark',
-    'failure': 'ignore',
-    'platform': {
-      'os': 'linux',
-      'arch': 'amd64',
-    },
-    'steps':
-      restoreBuildArtifactCache(ctx, 'ocis-binary-amd64', 'ocis/bin/ocis') +
-      ocisServer('ocis') + [
-      {
-        'name': 'build benchmarks',
-        'image': 'node',
-        'pull': 'always',
-        'commands': [
-          'cd tests/k6',
-          'yarn',
-          'yarn build',
-        ],
-      },
-      {
-        'name': 'run benchmarks',
-        'image': 'loadimpact/k6',
-        'pull': 'always',
-        'environment': {
-          'OC_HOST': 'https://ocis-server:9200',
-        },
-        'commands': [
-          'cd tests/k6',
-          'for f in ./dist/test-* ; do k6 run "$f" -q; done',
-        ],
-      },
-    ],
-    'depends_on': getPipelineNames([buildOcisBinaryForTesting(ctx)]),
-    'trigger': {
-      'ref': [
-        'refs/heads/master',
-        'refs/tags/v*',
-        'refs/pull/**',
-      ],
-    },
   }
 
 def uiTests(ctx):
@@ -621,7 +565,7 @@ def uiTestPipeline(ctx, suiteName, storage = 'owncloud', accounts_hash_difficult
           'LOCAL_UPLOAD_DIR': '/uploads',
           'NODE_TLS_REJECT_UNAUTHORIZED': 0,
           'TEST_PATHS': paths,
-          'EXPECTED_FAILURES_FILE': '/drone/src/tests/acceptance/expected-failures-webUI-on-%s-storage.txt' % (storage.upper()),
+          'EXPECTED_FAILURES_FILE': '/drone/src/tests/acceptance/expected-failures-webUI-on-%s-storage.md' % (storage.upper()),
         },
         'commands': [
           'source /drone/src/.drone.env',
@@ -923,7 +867,7 @@ def binaryRelease(ctx, name):
       makeGenerate('ocis') + [
       {
         'name': 'build',
-        'image': 'webhippie/golang:1.14',
+        'image': 'webhippie/golang:1.15',
         'pull': 'always',
         'commands': [
           'make -C ocis release-%s' % (name),
@@ -931,7 +875,7 @@ def binaryRelease(ctx, name):
       },
       {
         'name': 'finish',
-        'image': 'webhippie/golang:1.14',
+        'image': 'webhippie/golang:1.15',
         'pull': 'always',
         'commands': [
           'make -C ocis release-finish',
@@ -1094,7 +1038,7 @@ def changelog(ctx):
     'steps': [
       {
         'name': 'generate',
-        'image': 'webhippie/golang:1.14',
+        'image': 'webhippie/golang:1.15',
         'pull': 'always',
         'commands': [
           'make -C ocis changelog',
@@ -1232,7 +1176,7 @@ def docs(ctx):
     'steps': [
       {
         'name': 'generate-config-docs',
-        'image': 'webhippie/golang:1.14',
+        'image': 'webhippie/golang:1.15',
         'commands': ['make -C %s config-docs-generate' % (module) for module in config['modules']],
       },
       {
@@ -1313,7 +1257,7 @@ def makeGenerate(module):
   return [
     {
       'name': 'generate',
-      'image': 'webhippie/golang:1.14',
+      'image': 'webhippie/golang:1.15',
       'pull': 'always',
       'commands': [
         'make -C %s generate' % (module),
@@ -1507,7 +1451,7 @@ def build():
   return [
     {
       'name': 'build',
-      'image': 'webhippie/golang:1.14',
+      'image': 'webhippie/golang:1.15',
       'pull': 'always',
       'commands': [
         'make -C ocis build',

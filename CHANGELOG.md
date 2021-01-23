@@ -7,9 +7,16 @@ The following sections list the changes for unreleased.
 ## Summary
 
 * Change - Disable pretty logging by default: [#1133](https://github.com/owncloud/ocis/pull/1133)
+* Change - Add "volume" declaration to docker images: [#1375](https://github.com/owncloud/ocis/pull/1375)
+* Change - Add "expose" information to docker images: [#1366](https://github.com/owncloud/ocis/pull/1366)
 * Change - Generate cryptographically secure state token: [#1203](https://github.com/owncloud/ocis/pull/1203)
+* Change - Move k6 to cdperf: [#1358](https://github.com/owncloud/ocis/pull/1358)
+* Change - Update go version: [#1364](https://github.com/owncloud/ocis/pull/1364)
 * Change - Update ownCloud Web to v1.0.1: [#1191](https://github.com/owncloud/ocis/pull/1191)
 * Enhancement - Add OCIS_URL env var: [#1148](https://github.com/owncloud/ocis/pull/1148)
+* Enhancement - Use sync.cache for roles cache: [#1367](https://github.com/owncloud/ocis/pull/1367)
+* Enhancement - Add named locks and refactor cache: [#1212](https://github.com/owncloud/ocis/pull/1212)
+* Enhancement - Update reva to v1.5.1: [#1372](https://github.com/owncloud/ocis/pull/1372)
 * Enhancement - Update reva to v1.4.1-0.20210111080247-f2b63bfd6825: [#1194](https://github.com/owncloud/ocis/pull/1194)
 
 ## Details
@@ -22,6 +29,24 @@ The following sections list the changes for unreleased.
 
    https://github.com/owncloud/ocis/pull/1133
 
+* Change - Add "volume" declaration to docker images: [#1375](https://github.com/owncloud/ocis/pull/1375)
+
+   Tags: docker
+
+   Add "volume" declaration to docker images. This makes it easier for Docker users to see where
+   oCIS stores data.
+
+   https://github.com/owncloud/ocis/pull/1375
+
+* Change - Add "expose" information to docker images: [#1366](https://github.com/owncloud/ocis/pull/1366)
+
+   Tags: docker
+
+   Add "expose" information to docker images. Docker users will now see that we offer services on
+   port 9200.
+
+   https://github.com/owncloud/ocis/pull/1366
+
 * Change - Generate cryptographically secure state token: [#1203](https://github.com/owncloud/ocis/pull/1203)
 
    Replaced Math.random with a cryptographically secure way to generate the oidc state token
@@ -30,6 +55,23 @@ The following sections list the changes for unreleased.
    https://github.com/owncloud/ocis/pull/1203
    https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues
    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+
+* Change - Move k6 to cdperf: [#1358](https://github.com/owncloud/ocis/pull/1358)
+
+   Tags: performance, testing, k6
+
+   The ownCloud performance tests can not only be used to test ocis. This is why we have decided to
+   move the k6 tests to https://github.com/owncloud/cdperf
+
+   https://github.com/owncloud/ocis/pull/1358
+
+* Change - Update go version: [#1364](https://github.com/owncloud/ocis/pull/1364)
+
+   Tags: go
+
+   Update go from 1.13 to 1.15
+
+   https://github.com/owncloud/ocis/pull/1364
 
 * Change - Update ownCloud Web to v1.0.1: [#1191](https://github.com/owncloud/ocis/pull/1191)
 
@@ -70,6 +112,108 @@ The following sections list the changes for unreleased.
    containers.
 
    https://github.com/owncloud/ocis/pull/1148
+
+* Enhancement - Use sync.cache for roles cache: [#1367](https://github.com/owncloud/ocis/pull/1367)
+
+   Tags: ocis-pkg
+
+   Update ocis-pkg/roles cache to use ocis-pkg/sync cache
+
+   https://github.com/owncloud/ocis/pull/1367
+
+* Enhancement - Add named locks and refactor cache: [#1212](https://github.com/owncloud/ocis/pull/1212)
+
+   Tags: ocis-pkg, accounts
+
+   We had the case that we needed kind of a named locking mechanism which enables us to lock only
+   under certain conditions. It's used in the indexer package where we do not need to lock
+   everything, instead just lock the requested parts and differentiate between reads and
+   writes.
+
+   This made it possible to entirely remove locks from the accounts service and move them to the
+   ocis-pkg indexer. Another part of this refactor was to make the cache atomic and write tests for
+   it.
+
+   - remove locking from accounts service - add sync package with named mutex - add named locking to
+   indexer - move cache to sync package
+
+   https://github.com/owncloud/ocis/issues/966
+   https://github.com/owncloud/ocis/pull/1212
+
+* Enhancement - Update reva to v1.5.1: [#1372](https://github.com/owncloud/ocis/pull/1372)
+
+   Summary -------
+
+  * Fix #1401: Use the user in request for deciding the layout for non-home DAV requests
+  * Fix #1413: Re-include the '.git' dir in the Docker images to pass the version tag
+  * Fix #1399: Fix ocis trash-bin purge
+  * Enh #1397: Bump the Copyright date to 2021
+  * Enh #1398: Support site authorization status in Mentix
+  * Enh #1393: Allow setting favorites, mtime and a temporary etag
+  * Enh #1403: Support remote cloud gathering metrics
+
+   Details -------
+
+  * Bugfix #1401: Use the user in request for deciding the layout for non-home DAV requests
+
+   For the incoming /dav/files/userID requests, we have different namespaces depending on
+   whether the request is for the logged-in user's namespace or not. Since in the storage drivers,
+   we specify the layout depending only on the user whose resources are to be accessed, this fails
+   when a user wants to access another user's namespace when the storage provider depends on the
+   logged in user's namespace. This PR fixes that.
+
+   For example, consider the following case. The owncloud fs uses a layout {{substr 0 1
+   .Id.OpaqueId}}/{{.Id.OpaqueId}}. The user einstein sends a request to access a resource
+   shared with him, say /dav/files/marie/abcd, which should be allowed. However, based on the
+   way we applied the layout, there's no way in which this can be translated to /m/marie/.
+
+   Https://github.com/cs3org/reva/pull/1401
+
+  * Bugfix #1413: Re-include the '.git' dir in the Docker images to pass the version tag
+
+   And git SHA to the release tool.
+
+   Https://github.com/cs3org/reva/pull/1413
+
+  * Bugfix #1399: Fix ocis trash-bin purge
+
+   Fixes the empty trash-bin functionality for ocis-storage
+
+   Https://github.com/owncloud/product/issues/254
+   https://github.com/cs3org/reva/pull/1399
+
+  * Enhancement #1397: Bump the Copyright date to 2021
+
+   Https://github.com/cs3org/reva/pull/1397
+
+  * Enhancement #1398: Support site authorization status in Mentix
+
+   This enhancement adds support for a site authorization status to Mentix. This way, sites
+   registered via a web app can now be excluded until authorized manually by an administrator.
+
+   Furthermore, Mentix now sets the scheme for Prometheus targets. This allows us to also support
+   monitoring of sites that do not support the default HTTPS scheme.
+
+   Https://github.com/cs3org/reva/pull/1398
+
+  * Enhancement #1393: Allow setting favorites, mtime and a temporary etag
+
+   We now let the ocis driver persist favorites, set temporary etags and the mtime as arbitrary
+   metadata.
+
+   Https://github.com/owncloud/ocis/issues/567
+   https://github.com/cs3org/reva/issues/1394
+   https://github.com/cs3org/reva/pull/1393
+
+  * Enhancement #1403: Support remote cloud gathering metrics
+
+   The current metrics package can only gather metrics either from json files. With this feature,
+   the metrics can be gathered polling the http endpoints exposed by the owncloud/nextcloud
+   sciencemesh apps.
+
+   Https://github.com/cs3org/reva/pull/1403
+
+   https://github.com/owncloud/ocis/pull/1372
 
 * Enhancement - Update reva to v1.4.1-0.20210111080247-f2b63bfd6825: [#1194](https://github.com/owncloud/ocis/pull/1194)
 
