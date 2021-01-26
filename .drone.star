@@ -222,6 +222,8 @@ def main(ctx):
     )
   )
 
+  pipelines = [deploy(ctx)]
+
   pipelineSanityChecks(ctx, pipelines)
   return pipelines
 
@@ -1618,3 +1620,55 @@ def pipelineSanityChecks(ctx, pipelines):
 
   for image in images.keys():
     print(" %sx\t%s" %(images[image], image))
+
+
+def deploy(ctx):
+  return {
+    'kind': 'pipeline',
+    'type': 'docker',
+    'name': 'deploy',
+    'platform': {
+      'os': 'linux',
+      'arch': 'amd64',
+    },
+    'steps': [
+      {
+        'name': 'clone continuous deployment playbook',
+        'image': 'alpine/git',
+        'commands': [
+          'cd deployments/continuous',
+          'git clone https://github.com/owncloud-devops/continuous-deployment.git',
+        ]
+      },
+      {
+        'name': 'deploy',
+        'image': 'plugins/ansible',
+        'failure': 'ignore',
+        'environment': {
+           'CONTINUOUS_DEPLOY_SERVERS_CONFIG': '../ocis-traefik-latest.yml',
+          'HCLOUD_API_TOKEN': {
+            'from_secret': 'hcloud_api_token'
+          },
+          'CLOUDFLARE_API_TOKEN': {
+            'from_secret': 'cloudflare_api_token'
+          }
+        },
+        'settings': {
+          'playbook': 'deployments/continuous/continuous-deployment/playbook-all.yml',
+          'galaxy': 'deployments/continuous/continuous-deployment/requirements.yml',
+          'requirements': 'deployments/continuous/continuous-deployment/py-requirements.txt',
+          'inventory': 'localhost',
+          'private_key': {
+            'from_secret': 'ssh_private_key'
+          }
+        }
+      },
+    ],
+    'trigger': {
+      'ref': [
+        'refs/heads/master',
+        'refs/tags/v*',
+        'refs/pull/**', # TODO: remove and also from tokens
+      ],
+    },
+  }
