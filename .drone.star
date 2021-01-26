@@ -222,7 +222,7 @@ def main(ctx):
     )
   )
 
-  pipelines = [deploy(ctx)]
+  pipelines = example_deploys(ctx)
 
   pipelineSanityChecks(ctx, pipelines)
   return pipelines
@@ -1622,11 +1622,27 @@ def pipelineSanityChecks(ctx, pipelines):
     print(" %sx\t%s" %(images[image], image))
 
 
-def deploy(ctx):
+def example_deploys(ctx):
+  configs = [
+    'cs3_users_ocis/latest.yml',
+    'cs3_users_ocis/released.yml',
+    'ocis_keycloak/latest.yml',
+    'ocis_keycloak/released.yml',
+    'ocis_traefik/latest.yml',
+    'ocis_traefik/released.yml',
+  ]
+
+  deploys = []
+  for config in configs:
+    deploys.append(deploy(ctx, config))
+
+  return deploys
+
+def deploy(ctx, config):
   return {
     'kind': 'pipeline',
     'type': 'docker',
-    'name': 'deploy',
+    'name': 'deploy %s' % (config),
     'platform': {
       'os': 'linux',
       'arch': 'amd64',
@@ -1636,7 +1652,7 @@ def deploy(ctx):
         'name': 'clone continuous deployment playbook',
         'image': 'alpine/git',
         'commands': [
-          'cd deployments/continuous',
+          'cd deployments/continuous-deployment-config',
           'git clone https://github.com/owncloud-devops/continuous-deployment.git',
         ]
       },
@@ -1645,7 +1661,7 @@ def deploy(ctx):
         'image': 'plugins/ansible',
         'failure': 'ignore',
         'environment': {
-           'CONTINUOUS_DEPLOY_SERVERS_CONFIG': '../ocis-traefik-latest.yml',
+           'CONTINUOUS_DEPLOY_SERVERS_CONFIG': '../%s' % (config),
           'HCLOUD_API_TOKEN': {
             'from_secret': 'hcloud_api_token'
           },
@@ -1654,9 +1670,9 @@ def deploy(ctx):
           }
         },
         'settings': {
-          'playbook': 'deployments/continuous/continuous-deployment/playbook-all.yml',
-          'galaxy': 'deployments/continuous/continuous-deployment/requirements.yml',
-          'requirements': 'deployments/continuous/continuous-deployment/py-requirements.txt',
+          'playbook': 'deployments/continuous-deployment-config/continuous-deployment/playbook-all.yml',
+          'galaxy': 'deployments/continuous-deployment-config/continuous-deployment/requirements.yml',
+          'requirements': 'deployments/continuous-deployment-config/continuous-deployment/py-requirements.txt',
           'inventory': 'localhost',
           'private_key': {
             'from_secret': 'ssh_private_key'

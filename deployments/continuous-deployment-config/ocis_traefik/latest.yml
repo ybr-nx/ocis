@@ -5,9 +5,8 @@
   location: nbg1
   ssh_key_names:
     - owncloud-ocis@drone.owncloud.com
-    - wkloucek@owncloud.com
   labels:
-    owner: wkloucek-in-behalf-of-oCIS-Team
+    owner: wkloucek
     for: oCIS-continuous-deployment-examples
   domains:
     - "*.ocis-traefik.latest.owncloud.works"
