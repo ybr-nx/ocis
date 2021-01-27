@@ -14,7 +14,7 @@
     docker_compose_projects:
       - name: ocis
         git_url: https://github.com/owncloud/ocis.git
-        ref: master
+        ref: continuous_deployment # TODO: change
         docker_compose_path: deployments/examples/cs3_users_ocis
         env:
           INSECURE: "false"
