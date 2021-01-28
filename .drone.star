@@ -222,7 +222,7 @@ def main(ctx):
     )
   )
 
-  pipelines = example_deploys(ctx)
+  pipelines = example_deploys(ctx) #TODO: properly hook it up
 
   pipelineSanityChecks(ctx, pipelines)
   return pipelines
@@ -1462,6 +1462,88 @@ def build():
     },
   ]
 
+def example_deploys(ctx):
+  latest_configs = [
+    'cs3_users_ocis/latest.yml',
+    'ocis_keycloak/latest.yml',
+    'ocis_traefik/latest.yml',
+  ]
+  released_configs = [
+    'cs3_users_ocis/released.yml',
+    'ocis_keycloak/released.yml',
+    'ocis_traefik/released.yml',
+  ]
+
+  # if on master branch:
+  configs = latest_configs
+  rebuild = "false"
+
+  if ctx.build.event == "tag":
+    configs = released_configs
+    rebuild = 'false'
+
+  if ctx.build.event == "cron":
+    configs = latest_configs + released_configs
+    rebuild = 'true'
+
+  deploys = []
+  for config in configs:
+    deploys.append(deploy(ctx, config, rebuild))
+
+  return deploys
+
+def deploy(ctx, config, rebuild):
+  return {
+    'kind': 'pipeline',
+    'type': 'docker',
+    'name': 'deploy %s' % (config),
+    'platform': {
+      'os': 'linux',
+      'arch': 'amd64',
+    },
+    'steps': [
+      {
+        'name': 'clone continuous deployment playbook',
+        'image': 'alpine/git',
+        'commands': [
+          'cd deployments/continuous-deployment-config',
+          'git clone https://github.com/owncloud-devops/continuous-deployment.git',
+        ]
+      },
+      {
+        'name': 'deploy',
+        'image': 'owncloudci/drone-ansible',
+        'failure': 'ignore',
+        'environment': {
+          'CONTINUOUS_DEPLOY_SERVERS_CONFIG': '../%s' % (config),
+          "REBUILD": '%s' % (rebuild),
+          'HCLOUD_API_TOKEN': {
+            'from_secret': 'hcloud_api_token'
+          },
+          'CLOUDFLARE_API_TOKEN': {
+            'from_secret': 'cloudflare_api_token'
+          }
+        },
+        'settings': {
+          'playbook': 'deployments/continuous-deployment-config/continuous-deployment/playbook-all.yml',
+          'galaxy': 'deployments/continuous-deployment-config/continuous-deployment/requirements.yml',
+          'requirements': 'deployments/continuous-deployment-config/continuous-deployment/py-requirements.txt',
+          'inventory': 'localhost',
+          'private_key': {
+            'from_secret': 'ssh_private_key'
+          }
+        }
+      },
+    ],
+    'trigger': {
+      'ref': [
+        'refs/heads/master',
+        'refs/tags/v*',
+        'refs/pull/**', # TODO: remove and also from tokens
+      ],
+    },
+  }
+
 def genericCache(name, action, mounts, cache_key):
   rebuild = 'false'
   restore = 'false'
@@ -1620,71 +1702,3 @@ def pipelineSanityChecks(ctx, pipelines):
 
   for image in images.keys():
     print(" %sx\t%s" %(images[image], image))
-
-
-def example_deploys(ctx):
-  configs = [
-    'cs3_users_ocis/latest.yml',
-    'cs3_users_ocis/released.yml',
-    'ocis_keycloak/latest.yml',
-    'ocis_keycloak/released.yml',
-    'ocis_traefik/latest.yml',
-    'ocis_traefik/released.yml',
-  ]
-
-  deploys = []
-  for config in configs:
-    deploys.append(deploy(ctx, config))
-
-  return deploys
-
-def deploy(ctx, config):
-  return {
-    'kind': 'pipeline',
-    'type': 'docker',
-    'name': 'deploy %s' % (config),
-    'platform': {
-      'os': 'linux',
-      'arch': 'amd64',
-    },
-    'steps': [
-      {
-        'name': 'clone continuous deployment playbook',
-        'image': 'alpine/git',
-        'commands': [
-          'cd deployments/continuous-deployment-config',
-          'git clone https://github.com/owncloud-devops/continuous-deployment.git',
-        ]
-      },
-      {
-        'name': 'deploy',
-        'image': 'plugins/ansible',
-        'failure': 'ignore',
-        'environment': {
-           'CONTINUOUS_DEPLOY_SERVERS_CONFIG': '../%s' % (config),
-          'HCLOUD_API_TOKEN': {
-            'from_secret': 'hcloud_api_token'
-          },
-          'CLOUDFLARE_API_TOKEN': {
-            'from_secret': 'cloudflare_api_token'
-          }
-        },
-        'settings': {
-          'playbook': 'deployments/continuous-deployment-config/continuous-deployment/playbook-all.yml',
-          'galaxy': 'deployments/continuous-deployment-config/continuous-deployment/requirements.yml',
-          'requirements': 'deployments/continuous-deployment-config/continuous-deployment/py-requirements.txt',
-          'inventory': 'localhost',
-          'private_key': {
-            'from_secret': 'ssh_private_key'
-          }
-        }
-      },
-    ],
-    'trigger': {
-      'ref': [
-        'refs/heads/master',
-        'refs/tags/v*',
-        'refs/pull/**', # TODO: remove and also from tokens
-      ],
-    },
-  }
