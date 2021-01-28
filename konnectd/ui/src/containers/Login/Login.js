@@ -73,7 +73,7 @@ class Login extends React.PureComponent {
             <FormattedMessage id="konnect.login.info.password" defaultMessage="Password: relativity"></FormattedMessage>
           </p>
           <p>
-            <FormattedMessage id="konnect.login.info.dataHint" defaultMessage="Do not upload sensitive or personal data, other users can see your uploads."></FormattedMessage>
+            <FormattedMessage id="konnect.login.info.dataHint" defaultMessage="Do not upload sensitive or personal data! The instance is automatically reset every hour."></FormattedMessage>
           </p>
         </div>
         <form action="" onSubmit={(event) => this.logon(event)}>
